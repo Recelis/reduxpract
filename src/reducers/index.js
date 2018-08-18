@@ -23,18 +23,16 @@ Would be better if each todo was identified with its own ID, but this example is
 // never mutate reducer's arguments
 // perform side effects like API calls or routing transitions
 // call non-pure functins inside reducer.
-
+import { combineReducers } from 'redux';
 import { 
     ADD_TODO, 
     TOGGLE_TODO, 
     VisibilityFilters, 
     SET_VISIBILITY_FILTER 
-} from '../actions/index' // leave gap in between when importing so that it looks clear
+} from '../actions/index'; // leave gap in between when importing so that it looks clear
 
-const initialState = {
-    visibilityFilter:VisibilityFilters.SHOW_ALL,
-    todos: []
-}
+const { SHOW_ALL } = VisibilityFilters // why is this =? what does this = sign do?
+
 
 // without ES6 'default arguments syntax' https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Functions/default_parameters
 // function todoApp(state,action){
@@ -69,6 +67,7 @@ const initialState = {
 //                             completed:!todo.completed
 //                         })
 //                     }
+//                     return todo // don't forget to return the todo item if it hasn't been changed
 //                 })
 //             })
 //         default:
@@ -76,4 +75,49 @@ const initialState = {
 //     }
 // }
 
+function todos(state=[],action){
+  switch(action.type){
+    case ADD_TODO:
+      return [
+          ...state,
+          {
+              text:action.text,
+              completed:false
+          } 
+      ]
+    case TOGGLE_TODO:
+      return state.map((todo,index)=>{ // map creates a new array and returns it, so there is no mutation
+          if (index === action.index){
+              return Object.assign({},todo,{ // this is the todo item object, not the list, which gets assigned into its own todo item 
+                  completed:!todo.completed
+              })
+          }
+          return todo;
+      })
+  }
+}
 
+function visibilityFilter(state = SHOW_ALL, action){
+  switch(action.type){
+    case SET_VISIBILITY_FILTER:
+      return action.filter;
+    default:
+      return state;
+  }
+}
+
+// todoApp reducers without combineReducers function 
+// function todoApp(state = initialState,action){ // ES6 voodoo magic that if state is undefined set to initial State
+//   return {
+//     visibilityFilter:visibilityFilter(state.visibilityFilter, action),
+//     todos:todos(state.todos,action)
+//   }  
+// }
+
+//todoApp with combineReducers function
+const todoApp = combineReducers({
+  visibilityFilter,
+  todos
+})
+
+export default todoApp;
