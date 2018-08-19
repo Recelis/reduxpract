@@ -81,19 +81,18 @@ function todos(state=[],action){
       return [
           ...state,
           {
+              id: action.id,
               text:action.text,
               completed:false
           } 
       ]
     case TOGGLE_TODO:
-      return state.map((todo,index)=>{ // map creates a new array and returns it, so there is no mutation
-          if (index === action.index){
-              return Object.assign({},todo,{ // this is the todo item object, not the list, which gets assigned into its own todo item 
+      return state.map((todo)=> // map creates a new array and returns it, so there is no mutation
+          (todo.id === action.id)?
+              {...todo, // this is the todo item object, not the list, which gets assigned into its own todo item 
                   completed:!todo.completed
-              })
-          }
-          return todo;
-      })
+              }:todo
+      )
     default:
       return state;
   }
